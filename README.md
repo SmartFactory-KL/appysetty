@@ -1,4 +1,4 @@
-[![Tests](https://github.com/SmartFactory-KL/appysetty/actions/workflows/test.yml/badge.svg)]
+![Tests](https://github.com/SmartFactory-KL/appysetty/actions/workflows/test.yml/badge.svg)
 
 # ApPySetty ⚙️
 
