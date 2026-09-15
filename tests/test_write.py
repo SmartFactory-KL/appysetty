@@ -3,9 +3,9 @@ from pathlib import Path
 
 from appysetty.write import (
     _encase_str_in_quotes,
-    write_config_documentation,
     write_config_markdown,
     write_config_yaml_example,
+    write_configuration_documentation,
 )
 
 
@@ -121,7 +121,7 @@ def test_write_config_markdown_contains_docker_run(tmp_path: Path):
 
 
 def test_write_config_documentation_creates_both_files(tmp_path: Path):
-    write_config_documentation(
+    write_configuration_documentation(
         Config(),
         env_prefix="APP",
         output_dir=tmp_path,

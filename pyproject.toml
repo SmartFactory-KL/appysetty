@@ -12,6 +12,11 @@ dependencies = [
     "PyYAML==6.0.3"
 ]
 
+[project.urls]
+Homepage = "https://github.com/SmartFactory-KL/appysetty"
+Repository = "https://github.com/SmartFactory-KL/appysetty"
+Issues = "https://github.com/SmartFactory-KL/appysetty/issues"
+
 [build-system]
 requires = ["uv_build>=0.12.13,<0.13.0"]
 build-backend = "uv_build"
@@ -21,6 +26,7 @@ dev = [
     "pytest>=9.1.1",
     "pytest-cov>=7.1.0",
     "pyyaml>=6.0.3",
+    "ruff>=0.16.7",
 ]
 
 [tool.uv]

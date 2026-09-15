@@ -19,7 +19,7 @@ class MarkdownInfoEntry:
     is_secret: bool
 
 
-def write_config_documentation[T](
+def write_configuration_documentation[T](
     config: type[T] | T,
     env_prefix: str | None = None,
     output_dir: Path = Path("docs/config"),

@@ -23,6 +23,7 @@ class AppConfigEntry:
     description: str = ""
     is_secret: bool = False
 
+
 # AppConfigVisitor
 # [field_name, field_type_as_str, masked_field_value]
 AppConfigVisitor = Callable[[str, str, str], None]

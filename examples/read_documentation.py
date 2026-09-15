@@ -1,5 +1,4 @@
-from appysetty.model import AppConfigSource
-from appysetty.read import read_configuration
+from appysetty import AppConfigSource, read_configuration
 
 from .define_config import ExampleConfig
 

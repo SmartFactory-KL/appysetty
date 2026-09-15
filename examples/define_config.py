@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from typing import Annotated
 
-from appysetty.model import AppConfigEntry
+from appysetty import AppConfigEntry
 
 
 @dataclass

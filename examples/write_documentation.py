@@ -1,12 +1,12 @@
 from pathlib import Path
 
-from appysetty.write import write_config_documentation
+from appysetty import write_configuration_documentation
 
 from .define_config import ExampleConfig
 
 
 def run():
-    write_config_documentation(
+    write_configuration_documentation(
         ExampleConfig,
         env_prefix="EXAMPLE_APP",
         output_dir=Path("./examples/example_output"),
