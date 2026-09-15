@@ -1,3 +1,8 @@
+# user defined
+.coverage
+htmlcov/
+.pytest_cache/
+
 # Python-generated files
 __pycache__/
 *.py[oc]
