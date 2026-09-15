@@ -33,4 +33,4 @@ jobs:
         run: uv sync --locked
 
       - name: Run tests
-        run: uv run pytest --cov=appysetty --cov-report=term-missing --cov-fail-unter=96
+        run: uv run pytest --cov=appysetty --cov-report=term-missing --cov-fail-under=96
