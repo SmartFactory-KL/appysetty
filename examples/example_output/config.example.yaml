@@ -1,0 +1,30 @@
+# Host to run the application on
+# Type: str
+# Is Secret: False
+host: "localhost"
+ 
+# port
+# Type: int
+# Is Secret: False
+port: 8080
+ 
+# debug
+# Type: bool
+# Is Secret: False
+debug: False
+ 
+# Request timeout in seconds
+# Type: float
+# Is Secret: False
+timeout: 5.0
+ 
+# workers
+# Type: int
+# Is Secret: False
+workers: 4
+ 
+# API key used to access external services
+# Type: str
+# Is Secret: True
+api_key: ""
+ 
