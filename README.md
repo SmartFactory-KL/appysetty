@@ -1,4 +1,5 @@
-![Tests](https://github.com/SmartFactory-KL/appysetty/actions/workflows/test.yml/badge.svg)
+[![Tests](https://github.com/SmartFactory-KL/appysetty/actions/workflows/test.yml/badge.svg)](https://github.com/SmartFactory-KL/appysetty/actions/workflows/test.yml)
+[![PyPI version](https://img.shields.io/pypi/v/appysetty.svg)](https://pypi.org/project/appysetty/)
 
 # ApPySetty ⚙️
 
