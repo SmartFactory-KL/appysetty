@@ -1,16 +1,20 @@
 from dataclasses import dataclass
 from os import mkdir
+from typing import Annotated
 
 import pytest
 
-from appysetty import TomlSource, read_configuration
+from appysetty import AppConfigEntry, TomlSource, read_configuration
 from appysetty.model import AppConfigError
 
 
 @dataclass
 class Config:
-    host: str = "localhost"
-    port: int = 8080
+    host: Annotated[
+        str,
+        AppConfigEntry(description="The application host"),
+    ] = "localhost"
+    port: Annotated[int, AppConfigEntry(description="port to run on")] = 8080
     debug: bool = False
     timeout: float = 5.0
 
@@ -65,6 +69,8 @@ class TestReadConfigurationFromTOML:
 
         with pytest.raises(AppConfigError):
             read_configuration(Config, TomlSource(toml_path))
+
+        read_configuration(Config, TomlSource(toml_path, required=False))
 
     def test_toml_path_defaults(self, tmp_path, monkeypatch):
         monkeypatch.chdir(tmp_path)

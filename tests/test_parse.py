@@ -4,6 +4,7 @@ import pytest
 
 from appysetty import read_configuration
 from appysetty.model import AppConfigError, AppConfigWarning
+from appysetty.parse import parse_value
 from appysetty.source import DictSource
 
 
@@ -85,3 +86,16 @@ class TestParsing:
             config = read_configuration(original, [])
 
         assert config == original
+
+    def test_parse_bool_from_int(self):
+        tt = ["1", "on", "yes", 1, True, "true"]
+
+        for input in tt:
+            result = parse_value(input, bool)
+            assert result == True
+
+        tt = ["0", "off", "no", 0, False, "false"]
+
+        for input in tt:
+            result = parse_value(input, bool)
+            assert result == False
