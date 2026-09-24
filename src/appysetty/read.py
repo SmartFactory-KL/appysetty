@@ -1,7 +1,8 @@
+import dataclasses
 import warnings
 from collections.abc import Sequence
 from dataclasses import is_dataclass
-from typing import Annotated, cast, get_args, get_origin, get_type_hints
+from typing import Annotated, Any, cast, get_args, get_origin, get_type_hints
 
 from appysetty.model import (
     AppConfigEntry,
@@ -47,11 +48,6 @@ def read_configuration[T](
         cfg_type = type(config)
         cfg = config
 
-    if not is_dataclass(cfg):
-        raise AppConfigError(
-            "the provided config class must be annotated with @dataclass"
-        )
-
     if not sources:
         warnings.warn(
             "No configuration sources defined. This is fine for testing but may be unintentional in production.",
@@ -59,7 +55,7 @@ def read_configuration[T](
             stacklevel=2,
         )
 
-    type_hints = get_type_hints(cfg_type, include_extras=True)
+    type_hints = _get_config_type_hints(cfg)
 
     values = {field_name: getattr(cfg, field_name) for field_name in type_hints}
 
@@ -79,9 +75,9 @@ def read_configuration[T](
     return cast(T, cfg_type(**values))
 
 
-def visit_config_entries[T](config: object, visitor: AppConfigEntryVisitor):
+def visit_config_entries[T](config: Any, visitor: AppConfigEntryVisitor):
     """Runs the method once for every configuration entry without the actual value. Intended to generate documentation."""
-    type_hints = get_type_hints(type(config), include_extras=True)
+    type_hints = _get_config_type_hints(config)
 
     for field_name in type_hints:
         field_type = type_hints[field_name]
@@ -97,9 +93,9 @@ def visit_config_entries[T](config: object, visitor: AppConfigEntryVisitor):
         visitor(field_name, type_to_string(field_type), entry)
 
 
-def visit_config_strings[T](config: object, visitor: AppConfigVisitor):
+def visit_config_strings[T](config: Any, visitor: AppConfigVisitor):
     """Runs visitor once for every tuple of [key:str, value:str] for the configuration. Masks anything marked with is_secret."""
-    type_hints = get_type_hints(type(config), include_extras=True)
+    type_hints = _get_config_type_hints(config)
 
     for field_name in type_hints:
         field_metadata = _get_config_entry(type_hints[field_name])
@@ -125,3 +121,27 @@ def _get_config_entry(value_type: object) -> AppConfigEntry | None:
     for metadata in args[1:]:
         if isinstance(metadata, AppConfigEntry):
             return metadata
+
+
+def _get_config_type_hints(
+    cfg: Any,
+) -> dict[str, Any]:
+    """Filters type_hints output by only selecting fields that also are paret of dataclasses.fields()"""
+    if not is_dataclass(cfg):
+        raise AppConfigError(
+            "the provided config class must be annotated with @dataclass"
+        )
+
+    type_hints = get_type_hints(
+        cfg if isinstance(cfg, type) else type(cfg), include_extras=True
+    )
+
+    dataclass_fields = dataclasses.fields(cfg)
+
+    filtered_type_hints: dict[str, Any] = {}
+    for dataclass_field in dataclass_fields:
+        # TODO: actually filter
+        if dataclass_field.name in type_hints:
+            filtered_type_hints[dataclass_field.name] = type_hints[dataclass_field.name]
+
+    return filtered_type_hints
