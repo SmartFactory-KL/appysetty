@@ -94,6 +94,8 @@ class YamlSource(AppConfigSource):
             for candidate in candidates:
                 if candidate.is_file():
                     yaml_path = candidate
+                    break
+
         elif isinstance(self.path, str):
             yaml_path = Path(self.path)
         else:
@@ -180,6 +182,8 @@ class TomlSource(AppConfigSource):
             for candidate in candidates:
                 if candidate.is_file():
                     toml_path = candidate
+                    break
+
         elif isinstance(self.path, str):
             toml_path = Path(self.path)
         else:
