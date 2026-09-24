@@ -3,24 +3,29 @@ from typing import Annotated, get_args, get_origin
 from appysetty.model import AppConfigError
 
 
-def parse_value_from_string(value: str, value_type: object) -> object:
+def parse_value_from_string(
+    value: str, value_type: object, trim_strings: bool = False
+) -> object:
     """Parses a string to either str, int, float or bool. Other types are not supported."""
     if get_origin(value_type) is Annotated:
         value_type = get_args(value_type)[0]
 
-    trimmed = value.strip()
+    if trim_strings:
+        string_val = value.strip()
+    else:
+        string_val = value
 
     if value_type is str:
-        return trimmed
+        return string_val
 
     if value_type is int:
-        return int(trimmed)
+        return int(string_val)
 
     if value_type is float:
-        return float(trimmed)
+        return float(string_val)
 
     if value_type is bool:
-        normalized = trimmed.lower()
+        normalized = string_val.lower().strip()
         if normalized in {"true", "1", "yes", "on"}:
             return True
         elif normalized in {"false", "0", "no", "off"}:
@@ -33,13 +38,17 @@ def parse_value_from_string(value: str, value_type: object) -> object:
     raise AppConfigError(f"Unsupported configuration type {value_type}")
 
 
-def parse_value(value: object, value_type: object) -> object:
+def parse_value(
+    value: object, value_type: object, trim_strings: bool = False
+) -> object:
     """Parses more generic input to either str, int, float or bool. Other types are not supported."""
     if get_origin(value_type) is Annotated:
         value_type = get_args(value_type)[0]
 
     if isinstance(value, str):
-        return parse_value_from_string(value=value, value_type=value_type)
+        return parse_value_from_string(
+            value=value, value_type=value_type, trim_strings=trim_strings
+        )
 
     if value_type is int and isinstance(value, int) and not isinstance(value, bool):
         return value

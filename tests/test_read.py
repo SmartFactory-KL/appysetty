@@ -42,7 +42,10 @@ class TestReadConfiguration:
             host: str = "localhost"
             password: str = "secret"
 
-        with pytest.raises(AppConfigError):
+        with (
+            pytest.raises(AppConfigError),
+            pytest.warns(AppConfigWarning, match="No configuration sources"),
+        ):
             read_configuration(NonDataclassConfig, [])
 
     def test_sources_are_applied_in_order(self, monkeypatch, tmp_path):
@@ -80,7 +83,7 @@ class TestReadConfiguration:
 
         @dataclass(frozen=True)
         class UnknownSource(AppConfigSource):
-            def load(self, config_type_hints):
+            def load(self, config_type_hints, trim_strings: bool = False):
                 return {"not-in-config": "hello"}
 
         with pytest.raises(AppConfigError):

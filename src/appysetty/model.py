@@ -7,7 +7,7 @@ class AppConfigSource(ABC):
     """Represents any source, which only provide a load method"""
 
     @abstractmethod
-    def load(self, config_type_hints: Mapping[str, object]) -> Mapping[str, object]: ...
+    def load(self, config_type_hints: Mapping[str, object], trim_strings: bool = False) -> Mapping[str, object]: ...
 
 
 class AppConfigError(Exception):
@@ -18,7 +18,7 @@ class AppConfigWarning(UserWarning):
     """Warning raised for uncommon use of configuration"""
 
 
-@dataclass
+@dataclass(frozen=True)
 class AppConfigEntry:
     description: str = ""
     is_secret: bool = False

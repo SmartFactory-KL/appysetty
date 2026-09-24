@@ -6,19 +6,20 @@ from pathlib import Path
 
 import yaml
 
-from appysetty import AppConfigSource
 from appysetty.env import get_env_name
-from appysetty.model import AppConfigError
+from appysetty.model import AppConfigError, AppConfigSource
 from appysetty.parse import parse_value, parse_value_from_string
 
 
 @dataclass(frozen=True)
 class EnvSource(AppConfigSource):
-    """Uses Environemtn as source while all keys are converted to UPPER_SNAKE_CASE (with an optional PREFIX if supplied)"""
+    """Uses Environment as source while all keys are converted to UPPER_SNAKE_CASE (with an optional PREFIX if supplied)"""
 
     prefix: str | None = None
 
-    def load(self, config_type_hints):
+    def load(
+        self, config_type_hints, trim_strings: bool = False
+    ) -> Mapping[str, object]:
         values: dict[str, object] = {}
 
         for field_name in config_type_hints:
@@ -32,6 +33,7 @@ class EnvSource(AppConfigSource):
                 values[field_name] = parse_value_from_string(
                     val,
                     config_type_hints[field_name],
+                    trim_strings,
                 )
             except Exception as e:
                 raise AppConfigError(f"Failed to parse {env_name} from ENV: {e}") from e
@@ -45,7 +47,9 @@ class DictSource(AppConfigSource):
 
     input: dict[str, str]
 
-    def load(self, config_type_hints):
+    def load(
+        self, config_type_hints, trim_strings: bool = False
+    ) -> Mapping[str, object]:
         values: dict[str, object] = {}
 
         for name, value in self.input.items():
@@ -58,6 +62,7 @@ class DictSource(AppConfigSource):
                 values[name] = parse_value_from_string(
                     value,
                     config_type_hints[name],
+                    trim_strings,
                 )
             except Exception as e:
                 raise AppConfigError(
@@ -72,7 +77,7 @@ class YamlSource(AppConfigSource):
     """Reads input from YAML file, ignoring non-existing files when required is False.
 
     If no path is specified, the first file of the following list is used:
-    [config.yml, config.yaml, config/config.yml, config.config.yaml]
+    [config.yml, config.yaml, config/config.yml, config/config.yaml]
 
     If required is True and no file is found, an error is raised.
     """
@@ -80,7 +85,9 @@ class YamlSource(AppConfigSource):
     path: Path | str | None = None
     required: bool = True
 
-    def load(self, config_type_hints):
+    def load(
+        self, config_type_hints, trim_strings: bool = False
+    ) -> Mapping[str, object]:
         yaml_path: Path | None = None
 
         if self.path is None:
@@ -145,7 +152,9 @@ class YamlSource(AppConfigSource):
                 )
 
             try:
-                values[yaml_key] = parse_value(yaml_value, config_type_hints[yaml_key])
+                values[yaml_key] = parse_value(
+                    yaml_value, config_type_hints[yaml_key], trim_strings
+                )
             except Exception as e:
                 raise AppConfigError(
                     f"Failed to parse {yaml_key} from YAML: {e}"
@@ -167,7 +176,7 @@ class TomlSource(AppConfigSource):
     path: Path | str | None = None
     required: bool = True
 
-    def load(self, config_type_hints):
+    def load(self, config_type_hints, trim_strings: bool = False):
         toml_path: Path | None = None
 
         if self.path is None:
@@ -220,7 +229,9 @@ class TomlSource(AppConfigSource):
                 )
 
             try:
-                values[toml_key] = parse_value(toml_value, config_type_hints[toml_key])
+                values[toml_key] = parse_value(
+                    toml_value, config_type_hints[toml_key], trim_strings
+                )
             except Exception as e:
                 raise AppConfigError(
                     f"Failed to parse {toml_key} from TOML: {e}"

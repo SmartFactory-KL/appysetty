@@ -69,9 +69,6 @@ And also document your configuration with an example .yaml and a markdown docume
 write_configuration_documentation(Config, output_dir=Path("./docs"))
 ```
 
-> [!caution]
-> Please note that `.strip()` is applied to all string values which removes leading and trailing whitespaces. Inputs like `   hello  ` would become `hello`.
-
 ## Configuration Sources
 
 ApPySetty uses `AppConfigSource` as the interface to define loaders. These sources are loaded and applied in the order they are provided.
@@ -163,6 +160,10 @@ class MyOwnSource(AppConfigSource):
         return values
 ```
 
+> [!caution]
+> Using your own source might allow for more types then anticipated by the tool. So be careful.
+
+
 ## Define Config
 
 The simplest form of a config class looks like this:
@@ -199,7 +200,7 @@ class ConfigWithMetadata:
 
 Both variants can be mixed. If no description is provided, the name of the field will be the description.
 
-### Write Documentation
+## Write Documentation
 
 One feature of this tool is automating the documentation items for configuration options:
 

@@ -21,7 +21,7 @@ class TestParsing:
         ("field", "value", "expected"),
         [
             ("host", "example.com", "example.com"),
-            ("host", "   example.com   ", "example.com"),
+            ("host", "   example.com   ", "   example.com   "),
             ("port", "9000", 9000),
             ("timeout", "2.5", 2.5),
             ("debug", "   true   ", True),

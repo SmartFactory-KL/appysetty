@@ -6,8 +6,6 @@ from appysetty.env import get_env_name
 from appysetty.model import AppConfigEntry
 from appysetty.read import visit_config_entries
 
-_CONFIG_DOCS_PATH = Path("docs/config")
-
 
 @dataclass
 class MarkdownInfoEntry:

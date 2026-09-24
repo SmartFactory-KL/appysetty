@@ -18,17 +18,17 @@ from appysetty.parse import type_to_string
 def read_configuration[T](
     config: type[T] | T,
     sources: AppConfigSource | Sequence[AppConfigSource] | None = None,
+    trim_strings: bool = False
 ) -> T:
     """Read application configuration from at least one source
 
-    Sources are read in the provided order, with later values overwriting previos ones.
+    Sources are read in the provided order, with later values overwriting previous ones.
     If no values are provided the default values of AppConfig will be used.
     Note that ENV will only read UPPER_SNAKE_CASE variants of the name with a prefix as defined.
 
     Args:
         sources: list of sources to read
-
-        options: further options like env_prefix and yaml_path and overwrites for tests
+        trim_strings: If set to True, all string values will apply .strip(), removing whitespaces at start and end
 
     Returns:
         The resulting application configuration
@@ -60,7 +60,7 @@ def read_configuration[T](
     values = {field_name: getattr(cfg, field_name) for field_name in type_hints}
 
     for source in sources:
-        next_values = source.load(type_hints)
+        next_values = source.load(type_hints, trim_strings)
 
         unknown = next_values.keys() - type_hints.keys()
 
@@ -75,7 +75,7 @@ def read_configuration[T](
     return cast(T, cfg_type(**values))
 
 
-def visit_config_entries[T](config: Any, visitor: AppConfigEntryVisitor):
+def visit_config_entries[T](config: Any, visitor: AppConfigEntryVisitor) -> None:
     """Runs the method once for every configuration entry without the actual value. Intended to generate documentation."""
     type_hints = _get_config_type_hints(config)
 
@@ -93,7 +93,7 @@ def visit_config_entries[T](config: Any, visitor: AppConfigEntryVisitor):
         visitor(field_name, type_to_string(field_type), entry)
 
 
-def visit_config_strings[T](config: Any, visitor: AppConfigVisitor):
+def visit_config_strings[T](config: Any, visitor: AppConfigVisitor) -> None:
     """Runs visitor once for every tuple of [key:str, value:str] for the configuration. Masks anything marked with is_secret."""
     type_hints = _get_config_type_hints(config)
 
