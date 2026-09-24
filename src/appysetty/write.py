@@ -84,7 +84,7 @@ def write_config_markdown[T](
 
         entries.append(
             MarkdownInfoEntry(
-                env_name=get_env_name(env_prefix, field_name),
+                env_name=get_env_name(field_name, env_prefix),
                 field_name=field_name,
                 field_type=field_type,
                 default_value=getattr(cfg, field_name),
