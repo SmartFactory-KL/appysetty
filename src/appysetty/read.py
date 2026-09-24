@@ -70,7 +70,7 @@ def read_configuration[T](
 
         if unknown:
             raise AppConfigError(
-                f"{type(source).__name__} returned unkown fields that are not part of configuration "
+                f"{type(source).__name__} returned unknown fields that are not part of configuration "
                 f"fields: {', '.join(sorted(unknown))}"
             )
 

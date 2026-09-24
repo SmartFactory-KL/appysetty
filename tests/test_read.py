@@ -3,7 +3,7 @@ from typing import Annotated
 
 import pytest
 
-from appysetty import EnvSource
+from appysetty import AppConfigSource, EnvSource
 from appysetty.model import AppConfigEntry, AppConfigError, AppConfigWarning
 from appysetty.read import (
     read_configuration,
@@ -15,8 +15,11 @@ from appysetty.source import DictSource, YamlSource
 
 @dataclass
 class Config:
-    host: str = "localhost"
-    port: int = 8080
+    host: Annotated[
+        str,
+        AppConfigEntry(description="The application host"),
+    ] = "localhost"
+    port: Annotated[int, AppConfigEntry(description="port to run on")] = 8080
     debug: bool = False
     timeout: float = 5.0
 
@@ -25,6 +28,11 @@ class TestReadConfiguration:
     def test_uses_defaults_when_no_sources_are_provided(self):
         with pytest.warns(AppConfigWarning, match="No configuration sources"):
             config = read_configuration(Config, [])
+
+        assert config == Config()
+
+        with pytest.warns(AppConfigWarning, match="No configuration sources"):
+            config = read_configuration(Config, None)
 
         assert config == Config()
 
@@ -64,6 +72,22 @@ class TestReadConfiguration:
         assert config.from_env == "from-env"
         assert config.from_yaml == "from-yaml"
         assert config.from_dict == "from-dict"
+
+    def test_unknown_fields_raise(self):
+        @dataclass
+        class OrderConfig:
+            from_dict: str = "not-set"
+
+        @dataclass(frozen=True)
+        class UnknownSource(AppConfigSource):
+            def load(self, config_type_hints):
+                return {"not-in-config": "hello"}
+
+        with pytest.raises(AppConfigError):
+            read_configuration(
+                OrderConfig,
+                [DictSource(input={"from_dict": "from-dict"}), UnknownSource()],
+            )
 
 
 class TestAnnotatedConfig:

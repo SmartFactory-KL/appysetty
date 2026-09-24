@@ -1,6 +1,6 @@
 from appysetty.model import AppConfigEntry, AppConfigSource
 from appysetty.read import read_configuration
-from appysetty.source import DictSource, EnvSource, YamlSource
+from appysetty.source import DictSource, EnvSource, TomlSource, YamlSource
 from appysetty.write import (
     write_config_markdown,
     write_config_yaml_example,
@@ -12,6 +12,7 @@ __all__ = [
     "AppConfigSource",
     "DictSource",
     "EnvSource",
+    "TomlSource",
     "YamlSource",
     "read_configuration",
     "write_config_markdown",

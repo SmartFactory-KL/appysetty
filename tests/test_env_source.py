@@ -1,16 +1,20 @@
 from dataclasses import dataclass
+from typing import Annotated
 
 import pytest
 
-from appysetty import EnvSource, read_configuration
+from appysetty import AppConfigEntry, EnvSource, read_configuration
 from appysetty.env import get_env_name
 from appysetty.model import AppConfigError
 
 
 @dataclass
 class Config:
-    host: str = "localhost"
-    port: int = 8080
+    host: Annotated[
+        str,
+        AppConfigEntry(description="The application host"),
+    ] = "localhost"
+    port: Annotated[int, AppConfigEntry(description="port to run on")] = 8080
     debug: bool = False
     timeout: float = 5.0
 
