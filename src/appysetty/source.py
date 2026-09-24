@@ -113,12 +113,9 @@ class YamlSource(AppConfigSource):
             with yaml_path.open("r", encoding="utf-8") as file:
                 yaml_values: object = yaml.safe_load(file)
         except OSError as e:
-            if self.required:
-                raise AppConfigError(
-                    f"YAML was used as required source, but failed to read YAML configuration from {yaml_path}: {e}"
-                )
-            else:
-                return {}
+            raise AppConfigError(
+                f"YAML was used as source, but failed to read YAML configuration from {yaml_path}: {e}"
+            )
         except yaml.YAMLError as e:
             # this will raise even when required is off
             # since the file exists but is invalid - that is a different case from the file not existing
@@ -201,12 +198,9 @@ class TomlSource(AppConfigSource):
             with toml_path.open("rb") as file:
                 toml_values: object = tomllib.load(file)
         except OSError as e:
-            if self.required:
-                raise AppConfigError(
-                    f"TOML was used as required source, but failed to read TOML configuration from {toml_path}: {e}"
-                )
-            else:
-                return {}
+            raise AppConfigError(
+                f"TOML was used as source, but failed to read TOML configuration from {toml_path}: {e}"
+            )
         except tomllib.TOMLDecodeError as e:
             raise AppConfigError(
                 f"Failed to parse TOML configuration from {toml_path}: {e}"
