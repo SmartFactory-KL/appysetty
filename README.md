@@ -36,6 +36,9 @@ config = read_configuration(
 )
 ```
 
+> [!note]
+> Please note that `.strip()` is applied to all string values which removes leading and trailing whitespaces
+
 Override values with environment variables:
 
 ```bash
@@ -230,6 +233,12 @@ Run the examples:
 ```bash
 uv run python -m examples.write_documentation
 uv run python -m examples.read_documentation
+```
+
+Ruffing:
+```bash
+uv run ruff check
+uv run ruff format .
 ```
 
 ## License
