@@ -1,6 +1,8 @@
 from dataclasses import dataclass
 from pathlib import Path
+from typing import Annotated
 
+from appysetty import AppConfigEntry
 from appysetty.write import (
     _encase_str_in_quotes,
     write_config_markdown,
@@ -14,6 +16,7 @@ class Config:
     host: str = "localhost"
     port: int = 8080
     enabled: bool = True
+    password: Annotated[str, AppConfigEntry(is_secret=True)] = "MyPassword"
 
 
 def test_encase_str_in_quotes():
@@ -34,6 +37,8 @@ def test_write_config_yaml_example(tmp_path: Path):
     assert 'host: "localhost"' in output
     assert "port: 8080" in output
     assert "enabled: True" in output
+
+    assert "MyPassword" not in output
 
 
 def test_write_config_yaml_example_accepts_config_type(tmp_path: Path):
@@ -61,6 +66,8 @@ def test_write_config_markdown(tmp_path: Path):
     assert "| APP_HOST | host | `str` | `localhost` |" in output
     assert "| APP_PORT | port | `int` | `8080` |" in output
     assert "| APP_ENABLED | enabled | `bool` | `True` |" in output
+
+    assert "MyPassword" not in output
 
 
 def test_write_config_markdown_without_env_prefix(tmp_path: Path):
@@ -100,6 +107,8 @@ def test_write_config_markdown_contains_docker_compose(tmp_path: Path):
     assert "  APP_PORT: 8080" in output
     assert "  APP_ENABLED: True" in output
 
+    assert "MyPassword" not in output
+
 
 def test_write_config_markdown_contains_docker_run(tmp_path: Path):
     write_config_markdown(
@@ -118,6 +127,8 @@ def test_write_config_markdown_contains_docker_run(tmp_path: Path):
     assert "  -e APP_ENABLED=True" in output
 
     assert "  your-image:latest" in output
+
+    assert "MyPassword" not in output
 
 
 def test_write_config_documentation_creates_both_files(tmp_path: Path):

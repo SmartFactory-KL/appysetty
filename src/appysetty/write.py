@@ -46,6 +46,9 @@ def write_config_yaml_example[T](
     def visit(field_name: str, field_type: str, entry: AppConfigEntry) -> None:
         default_value = getattr(cfg, field_name)
 
+        if entry.is_secret:
+            default_value = f"Masked[len:{len(default_value)}]"
+
         description = entry.description
         if len(description.strip()) == 0:
             description = field_name
@@ -82,12 +85,16 @@ def write_config_markdown[T](
         if len(description.strip()) == 0:
             description = field_name
 
+        default_value = getattr(cfg, field_name)
+        if entry.is_secret:
+            default_value = f"Masked[len:{len(default_value)}]"
+
         entries.append(
             MarkdownInfoEntry(
                 env_name=get_env_name(field_name, env_prefix),
                 field_name=field_name,
                 field_type=field_type,
-                default_value=getattr(cfg, field_name),
+                default_value=default_value,
                 description=description,
                 is_secret=entry.is_secret,
             )
