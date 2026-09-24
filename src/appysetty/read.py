@@ -251,17 +251,19 @@ def _parse_value_from_string(value: str, value_type: object) -> object:
     if get_origin(value_type) is Annotated:
         value_type = get_args(value_type)[0]
 
+    trimmed = value.strip()
+
     if value_type is str:
-        return value
+        return trimmed
 
     if value_type is int:
-        return int(value)
+        return int(trimmed)
 
     if value_type is float:
-        return float(value)
+        return float(trimmed)
 
     if value_type is bool:
-        normalized = value.lower()
+        normalized = trimmed.lower()
         return normalized in {"true", "1", "yes", "on"}
 
     raise AppConfigError(f"Unsupported configuration type {value_type}")
@@ -287,6 +289,12 @@ def _parse_value(value: object, value_type: object) -> object:
 
     if value_type is bool and isinstance(value, bool):
         return value
+
+    if value_type is bool and isinstance(value, int):
+        if value == 0:
+            return False
+        elif value == 1:
+            return True
 
     raise AppConfigError(
         f"Invalid value: expected {value_type}, got {type(value).__name__}"
