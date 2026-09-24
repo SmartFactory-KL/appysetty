@@ -28,7 +28,7 @@ jobs:
       - name: Check version
         run: |
           VERSION=$(uv run python -c 'import tomllib; print(tomllib.load(open("pyproject.toml", "rb"))["project"]["version"])')
-          TAG="${RELEASE_TAG#v}"
+          TAG="${$GITHUB_REF_NAME#v}"
 
           if [ "$VERSION" != "$TAG" ]; then
             echo "Version mismatch:"
