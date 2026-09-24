@@ -77,7 +77,9 @@ write_configuration_documentation(Config, output_dir=Path("./docs"))
 ApPySetty uses `AppConfigSource` as the interface to define loaders. These sources are loaded and applied in the order they are provided.
 
 ```python
-cfg = read_configuration(Config, [YamlSource(...), EnvSource(...), DictSource(...)])
+cfg = read_configuration(
+    Config, [YamlSource(...), TomlSource(...), EnvSource(...), DictSource(...)]
+)
 ```
 
 In the example above, YAML values are applied first, then environment variables, and finally dictionary values. Later sources override values from earlier sources.
@@ -122,6 +124,24 @@ If required is False, a missing file will simply be ignored. If required is True
 
 > [!note]
 > Only flat mappings are allowed and the YAML key must match the config key exactly
+
+#### `TomlSource()` - Reading from a .toml file
+
+```python
+cfg = read_configuration(Config, TomlSource(path="", required=True))
+```
+
+If path is specified, that file is used. Otherwise, the first existing file from the following list is used:
+
+```text
+config.toml
+config/config.toml
+```
+
+If required is False, a missing file will simply be ignored. If required is True an AppConfigError is raised. By default required is set to True.
+
+> [!note]
+> Only flat mappings are allowed and the TOML key must match the config key exactly
 
 #### Define your own source
 
