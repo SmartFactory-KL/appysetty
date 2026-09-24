@@ -112,12 +112,12 @@ def write_config_markdown[T](
     for info_entry in entries:
         lines.append(
             "| "
-            f"{info_entry.env_name} | "
-            f"{info_entry.field_name} | "
-            f"`{info_entry.field_type}` | "
-            f"`{info_entry.default_value}` | "
-            f"{info_entry.is_secret} | "
-            f"{info_entry.description} |"
+            f"{_markdown_table_cell(info_entry.env_name)} | "
+            f"{_markdown_table_cell(info_entry.field_name)} | "
+            f"{_markdown_table_cell(info_entry.field_type)} | "
+            f"{_markdown_table_cell(info_entry.default_value)} | "
+            f"{_markdown_table_cell(info_entry.is_secret)} | "
+            f"{_markdown_table_cell(info_entry.description)} |"
         )
 
     lines.extend(
@@ -171,3 +171,16 @@ def _encase_str_in_quotes(value: object) -> str:
         return f'"{value!s}"'
 
     return f"{value!s}"
+
+
+def _markdown_table_cell(value: object) -> str:
+    return (
+        str(value)
+        .replace("&", "&amp;")
+        .replace("<", "&lt;")
+        .replace(">", "&gt;")
+        .replace("|", "&#124;")
+        .replace("\r\n", "<br>")
+        .replace("\r", "<br>")
+        .replace("\n", "<br>")
+    )

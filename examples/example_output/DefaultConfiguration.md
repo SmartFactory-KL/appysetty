@@ -4,12 +4,12 @@
 
 | ENV | Variable | Type | Default | Is Secret | Description |
 |---|---|---|---|---|---|
-| EXAMPLE_APP_HOST | host | `str` | `localhost` | False | Host to run the application on |
-| EXAMPLE_APP_PORT | port | `int` | `8080` | False | port |
-| EXAMPLE_APP_DEBUG | debug | `bool` | `False` | False | debug |
-| EXAMPLE_APP_TIMEOUT | timeout | `float` | `5.0` | False | Request timeout in seconds |
-| EXAMPLE_APP_WORKERS | workers | `int` | `4` | False | workers |
-| EXAMPLE_APP_API_KEY | api_key | `str` | `` | True | API key used to access external services |
+| EXAMPLE_APP_HOST | host | str | localhost | False | Host to run the application on |
+| EXAMPLE_APP_PORT | port | int | 8080 | False | port |
+| EXAMPLE_APP_DEBUG | debug | bool | False | False | debug |
+| EXAMPLE_APP_TIMEOUT | timeout | float | 5.0 | False | Request timeout in seconds |
+| EXAMPLE_APP_WORKERS | workers | int | 4 | False | workers |
+| EXAMPLE_APP_API_KEY | api_key | str | Masked[len:0] | True | API key used to access external services |
 
 ## Docker Compose
 
@@ -22,7 +22,7 @@ environment:
   EXAMPLE_APP_DEBUG: False
   EXAMPLE_APP_TIMEOUT: 5.0
   EXAMPLE_APP_WORKERS: 4
-  EXAMPLE_APP_API_KEY: 
+  EXAMPLE_APP_API_KEY: Masked[len:0]
 ```
 
 ## Docker Run
@@ -36,6 +36,6 @@ docker run \
   -e EXAMPLE_APP_DEBUG=False \
   -e EXAMPLE_APP_TIMEOUT=5.0 \
   -e EXAMPLE_APP_WORKERS=4 \
-  -e EXAMPLE_APP_API_KEY=''
+  -e EXAMPLE_APP_API_KEY='Masked[len:0]'
   your-image:latest
 ```

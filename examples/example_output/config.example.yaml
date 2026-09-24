@@ -26,5 +26,5 @@ workers: 4
 # API key used to access external services
 # Type: str
 # Is Secret: True
-api_key: ""
+api_key: "Masked[len:0]"
  

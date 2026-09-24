@@ -18,7 +18,7 @@ from appysetty.parse import type_to_string
 def read_configuration[T](
     config: type[T] | T,
     sources: AppConfigSource | Sequence[AppConfigSource] | None = None,
-    trim_strings: bool = False
+    trim_strings: bool = False,
 ) -> T:
     """Read application configuration from at least one source
 

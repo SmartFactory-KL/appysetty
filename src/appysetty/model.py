@@ -7,7 +7,9 @@ class AppConfigSource(ABC):
     """Represents any source, which only provide a load method"""
 
     @abstractmethod
-    def load(self, config_type_hints: Mapping[str, object], trim_strings: bool = False) -> Mapping[str, object]: ...
+    def load(
+        self, config_type_hints: Mapping[str, object], trim_strings: bool = False
+    ) -> Mapping[str, object]: ...
 
 
 class AppConfigError(Exception):
