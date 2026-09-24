@@ -35,4 +35,4 @@ class ExampleConfig:
             description="API key used to access external services",
             is_secret=True,
         ),
-    ] = ""
+    ] = "not here"
