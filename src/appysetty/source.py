@@ -50,7 +50,9 @@ class DictSource(AppConfigSource):
         for name, value in self.input.items():
             try:
                 if name not in config_type_hints:
-                    raise AppConfigError(f"Dict key {name} not found in configuration field names")
+                    raise AppConfigError(
+                        f"Dict key {name} not found in configuration field names"
+                    )
 
                 values[name] = parse_value_from_string(
                     value,
@@ -133,7 +135,9 @@ class YamlSource(AppConfigSource):
                 continue
 
             if yaml_key not in config_type_hints:
-                raise AppConfigError(f"YAML key {yaml_key} not found in configuration field names")
+                raise AppConfigError(
+                    f"YAML key {yaml_key} not found in configuration field names"
+                )
 
             try:
                 values[yaml_key] = parse_value(yaml_value, config_type_hints[yaml_key])

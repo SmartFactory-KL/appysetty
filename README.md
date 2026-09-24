@@ -77,10 +77,7 @@ write_configuration_documentation(Config, output_dir=Path("./docs"))
 ApPySetty uses `AppConfigSource` as the interface to define loaders. These sources are loaded and applied in the order they are provided.
 
 ```python
-cfg = read_configuration(
-    Config,
-    [YamlSource(...), EnvSource(...), DictSource(...)]
-)
+cfg = read_configuration(Config, [YamlSource(...), EnvSource(...), DictSource(...)])
 ```
 
 In the example above, YAML values are applied first, then environment variables, and finally dictionary values. Later sources override values from earlier sources.
@@ -90,10 +87,7 @@ The available sources are:
 #### `EnvSource()` - Reading from Environment
 
 ```python
-cfg = read_configuration(
-    Config,
-    EnvSource(prefix="MY_PREFIX")
-)
+cfg = read_configuration(Config, EnvSource(prefix="MY_PREFIX"))
 ```
 
 For every key within the config, the key is converted to UPPER_SNAKE_CASE, the optional prefix is applied and the resulting key is used to read a value from the environment.
@@ -104,10 +98,7 @@ For every key within the config, the key is converted to UPPER_SNAKE_CASE, the o
 #### `DictSource()` - Reading from a Dict
 
 ```python
-cfg = read_configuration(
-    Config,
-    DictSource(input={"key": "val"})
-)
+cfg = read_configuration(Config, DictSource(input={"key": "val"}))
 ```
 
 Values are read from the provided dictionary using the configuration field names as keys. Unknown dictionary keys are rejected.
@@ -115,10 +106,7 @@ Values are read from the provided dictionary using the configuration field names
 #### `YamlSource()` - Reading from a .yaml file
 
 ```python
-cfg = read_configuration(
-    Config,
-    YamlSource(path="", required=True)
-)
+cfg = read_configuration(Config, YamlSource(path="", required=True))
 ```
 
 If path is specified, that file is used. Otherwise, the first existing file from the following list is used:
