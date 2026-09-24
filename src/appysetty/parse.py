@@ -26,7 +26,9 @@ def parse_value_from_string(value: str, value_type: object) -> object:
         elif normalized in {"false", "0", "no", "off"}:
             return False
         else:
-            raise AppConfigError(f"invalid boolean value {normalized} - allowed are true/false, 1/0, yes/no, on/off")
+            raise AppConfigError(
+                f"invalid boolean value {normalized} - allowed are true/false, 1/0, yes/no, on/off"
+            )
 
     raise AppConfigError(f"Unsupported configuration type {value_type}")
 
