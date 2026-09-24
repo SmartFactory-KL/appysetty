@@ -1,0 +1,43 @@
+name: Tag checks
+
+on:
+  push:
+    tags:
+      - "v*"
+
+jobs:
+  check:
+    name: Check tag
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v7
+        with:
+          enable-cache: true
+
+      - name: Install dependencies
+        run: uv sync --locked
+
+      - name: Check version
+        run: |
+          VERSION=$(uv run python -c 'import tomllib; print(tomllib.load(open("pyproject.toml", "rb"))["project"]["version"])')
+          TAG="${RELEASE_TAG#v}"
+
+          if [ "$VERSION" != "$TAG" ]; then
+            echo "Version mismatch:"
+            echo "  pyproject.toml: $VERSION"
+            echo "  Git tag:        $TAG"
+            exit 1
+          fi
+
+      - name: Check linting
+        run: |
+          uv run ruff check .
+          uv run ruff format --check .
