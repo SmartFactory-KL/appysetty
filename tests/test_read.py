@@ -44,9 +44,8 @@ class TestReadConfiguration:
 
         with (
             pytest.raises(AppConfigError),
-            pytest.warns(AppConfigWarning, match="No configuration sources"),
         ):
-            read_configuration(NonDataclassConfig, [])
+            read_configuration(NonDataclassConfig)
 
     def test_sources_are_applied_in_order(self, monkeypatch, tmp_path):
         @dataclass

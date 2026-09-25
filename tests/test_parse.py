@@ -83,7 +83,10 @@ class TestParsing:
         )
 
         with pytest.warns(AppConfigWarning, match="No configuration sources"):
-            config = read_configuration(original, [])
+            config = read_configuration(original)
+
+        print(config)
+        print(original)
 
         assert config == original
 

@@ -41,12 +41,13 @@ def read_configuration[T](
     elif isinstance(sources, AppConfigSource):
         sources = [sources]
 
-    if isinstance(config, type):
-        cfg_type = config
-        cfg = config()
-    else:
-        cfg_type = type(config)
-        cfg = config
+    cfg_type = config if isinstance(config, type) else type(config)
+
+    # the second check makes sure `config` is handled as dataclass later on
+    if not is_dataclass(cfg_type) or not is_dataclass(config):
+        raise AppConfigError(
+            "The provided class or type must be annotated with @dataclass"
+        )
 
     if not sources:
         warnings.warn(
@@ -55,24 +56,45 @@ def read_configuration[T](
             stacklevel=2,
         )
 
-    type_hints = _get_config_type_hints(cfg)
+    type_hints = _get_config_type_hints(cfg_type)
 
-    values = {field_name: getattr(cfg, field_name) for field_name in type_hints}
+    values = {}
+
+    for field in dataclasses.fields(cfg_type):
+        if not field.init:
+            continue
+
+        if field.default is not dataclasses.MISSING:
+            values[field.name] = field.default
+        elif field.default_factory is not dataclasses.MISSING:
+            values[field.name] = field.default_factory()
+
+    if not isinstance(config, type):
+        for field in dataclasses.fields(config):
+            if not field.init:
+                continue
+
+            values[field.name] = getattr(config, field.name)
 
     for source in sources:
         next_values = source.load(type_hints, trim_strings)
 
-        unknown = next_values.keys() - type_hints.keys()
+        unknown_keys = next_values.keys() - type_hints.keys()
 
-        if unknown:
+        if unknown_keys:
             raise AppConfigError(
                 f"{type(source).__name__} returned unknown fields that are not part of configuration "
-                f"fields: {', '.join(sorted(unknown))}"
+                f"fields: {', '.join(sorted(unknown_keys))}"
             )
 
         values.update(next_values)
 
-    return cast(T, cfg_type(**values))
+    try:
+        result = cast(T, cfg_type(**values))
+    except TypeError as e:
+        raise AppConfigError(f"Could not construct {cfg_type.__name__}: {e}") from e
+
+    return result
 
 
 def visit_config_entries[T](config: Any, visitor: AppConfigEntryVisitor) -> None:
@@ -126,22 +148,20 @@ def _get_config_entry(value_type: object) -> AppConfigEntry | None:
 def _get_config_type_hints(
     cfg: Any,
 ) -> dict[str, Any]:
-    """Filters type_hints output by only selecting fields that also are paret of dataclasses.fields()"""
+    """Return type hints only for dataclass fields that participate in __init__."""
     if not is_dataclass(cfg):
         raise AppConfigError(
-            "the provided config class must be annotated with @dataclass"
+            "the provided class or type must be annotated with @dataclass"
         )
 
-    type_hints = get_type_hints(
-        cfg if isinstance(cfg, type) else type(cfg), include_extras=True
-    )
+    cfg_type = cfg if isinstance(cfg, type) else type(cfg)
+    type_hints = get_type_hints(cfg_type, include_extras=True)
 
     dataclass_fields = dataclasses.fields(cfg)
 
     filtered_type_hints: dict[str, Any] = {}
     for dataclass_field in dataclass_fields:
-        # TODO: actually filter
-        if dataclass_field.name in type_hints:
+        if dataclass_field.init and dataclass_field.name in type_hints:
             filtered_type_hints[dataclass_field.name] = type_hints[dataclass_field.name]
 
     return filtered_type_hints
