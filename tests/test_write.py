@@ -1,8 +1,9 @@
 from dataclasses import dataclass
 from pathlib import Path
+from typing import Annotated
 
+from appysetty import AppConfigEntry
 from appysetty.write import (
-    _encase_str_in_quotes,
     write_config_markdown,
     write_config_yaml_example,
     write_configuration_documentation,
@@ -14,12 +15,7 @@ class Config:
     host: str = "localhost"
     port: int = 8080
     enabled: bool = True
-
-
-def test_encase_str_in_quotes():
-    assert _encase_str_in_quotes("hello") == '"hello"'
-    assert _encase_str_in_quotes(123) == "123"
-    assert _encase_str_in_quotes(True) == "True"
+    password: Annotated[str, AppConfigEntry(is_secret=True)] = "MyPassword"
 
 
 def test_write_config_yaml_example(tmp_path: Path):
@@ -31,9 +27,11 @@ def test_write_config_yaml_example(tmp_path: Path):
     assert "# Type: int" in output
     assert "# Type: bool" in output
 
-    assert 'host: "localhost"' in output
+    assert "host: localhost" in output
     assert "port: 8080" in output
-    assert "enabled: True" in output
+    assert "enabled: true" in output
+
+    assert "MyPassword" not in output
 
 
 def test_write_config_yaml_example_accepts_config_type(tmp_path: Path):
@@ -41,9 +39,9 @@ def test_write_config_yaml_example_accepts_config_type(tmp_path: Path):
 
     output = (tmp_path / "config.example.yaml").read_text()
 
-    assert 'host: "localhost"' in output
+    assert "host: localhost" in output
     assert "port: 8080" in output
-    assert "enabled: True" in output
+    assert "enabled: true" in output
 
 
 def test_write_config_markdown(tmp_path: Path):
@@ -58,9 +56,11 @@ def test_write_config_markdown(tmp_path: Path):
     assert "# Application Configuration" in output
     assert "| ENV | Variable | Type | Default | Is Secret | Description |" in output
 
-    assert "| APP_HOST | host | `str` | `localhost` |" in output
-    assert "| APP_PORT | port | `int` | `8080` |" in output
-    assert "| APP_ENABLED | enabled | `bool` | `True` |" in output
+    assert "| APP_HOST | host | str | localhost |" in output
+    assert "| APP_PORT | port | int | 8080 |" in output
+    assert "| APP_ENABLED | enabled | bool | True |" in output
+
+    assert "MyPassword" not in output
 
 
 def test_write_config_markdown_without_env_prefix(tmp_path: Path):
@@ -82,7 +82,7 @@ def test_write_config_markdown_accepts_config_type(tmp_path: Path):
 
     output = (tmp_path / "DefaultConfiguration.md").read_text()
 
-    assert "| APP_HOST | host | `str` | `localhost` |" in output
+    assert "| APP_HOST | host | str | localhost |" in output
 
 
 def test_write_config_markdown_contains_docker_compose(tmp_path: Path):
@@ -98,7 +98,9 @@ def test_write_config_markdown_contains_docker_compose(tmp_path: Path):
     assert "environment:" in output
     assert "  APP_HOST: localhost" in output
     assert "  APP_PORT: 8080" in output
-    assert "  APP_ENABLED: True" in output
+    assert "  APP_ENABLED: true" in output
+
+    assert "MyPassword" not in output
 
 
 def test_write_config_markdown_contains_docker_run(tmp_path: Path):
@@ -118,6 +120,8 @@ def test_write_config_markdown_contains_docker_run(tmp_path: Path):
     assert "  -e APP_ENABLED=True" in output
 
     assert "  your-image:latest" in output
+
+    assert "MyPassword" not in output
 
 
 def test_write_config_documentation_creates_both_files(tmp_path: Path):

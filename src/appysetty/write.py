@@ -2,11 +2,11 @@ import shlex
 from dataclasses import dataclass
 from pathlib import Path
 
+import yaml
+
 from appysetty.env import get_env_name
 from appysetty.model import AppConfigEntry
 from appysetty.read import visit_config_entries
-
-_CONFIG_DOCS_PATH = Path("docs/config")
 
 
 @dataclass
@@ -46,15 +46,18 @@ def write_config_yaml_example[T](
     def visit(field_name: str, field_type: str, entry: AppConfigEntry) -> None:
         default_value = getattr(cfg, field_name)
 
+        if entry.is_secret:
+            default_value = f"Masked[len:{len(str(default_value))}]"
+
         description = entry.description
         if len(description.strip()) == 0:
             description = field_name
 
-        lines.append(f"# {description}")
-        lines.append(f"# Type: {field_type}")
-        lines.append(f"# Is Secret: {entry.is_secret}")
-        lines.append(f"{field_name}: {_encase_str_in_quotes(default_value)}")
-        lines.append(" ")
+        lines.append(_yaml_comment(f"{description}"))
+        lines.append(_yaml_comment(f"Type: {field_type}"))
+        lines.append(_yaml_comment(f"Is Secret: {entry.is_secret}"))
+        lines.append(_yaml_line(key=field_name, val=default_value))
+        lines.append("")
 
     visit_config_entries(cfg, visit)
 
@@ -82,12 +85,16 @@ def write_config_markdown[T](
         if len(description.strip()) == 0:
             description = field_name
 
+        default_value = getattr(cfg, field_name)
+        if entry.is_secret:
+            default_value = f"Masked[len:{len(str(default_value))}]"
+
         entries.append(
             MarkdownInfoEntry(
-                env_name=get_env_name(env_prefix, field_name),
+                env_name=get_env_name(field_name, env_prefix),
                 field_name=field_name,
                 field_type=field_type,
-                default_value=getattr(cfg, field_name),
+                default_value=default_value,
                 description=description,
                 is_secret=entry.is_secret,
             )
@@ -107,12 +114,12 @@ def write_config_markdown[T](
     for info_entry in entries:
         lines.append(
             "| "
-            f"{info_entry.env_name} | "
-            f"{info_entry.field_name} | "
-            f"`{info_entry.field_type}` | "
-            f"`{info_entry.default_value}` | "
-            f"{info_entry.is_secret} | "
-            f"{info_entry.description} |"
+            f"{_markdown_table_cell(info_entry.env_name)} | "
+            f"{_markdown_table_cell(info_entry.field_name)} | "
+            f"{_markdown_table_cell(info_entry.field_type)} | "
+            f"{_markdown_table_cell(info_entry.default_value)} | "
+            f"{_markdown_table_cell(info_entry.is_secret)} | "
+            f"{_markdown_table_cell(info_entry.description)} |"
         )
 
     lines.extend(
@@ -128,7 +135,9 @@ def write_config_markdown[T](
     )
 
     for info_entry in entries:
-        lines.append(f"  {info_entry.env_name}: {info_entry.default_value}")
+        lines.append(
+            f"  {_yaml_line(key=info_entry.env_name, val=_escape_value(info_entry.default_value))}"
+        )
 
     lines.extend(
         [
@@ -143,15 +152,10 @@ def write_config_markdown[T](
         ]
     )
 
-    docker_envs = []
     for info_entry in entries:
-        docker_envs.append(
-            f"-e {info_entry.env_name}={shlex.quote(str(info_entry.default_value))}"
+        lines.append(
+            f"  -e {info_entry.env_name}={shlex.quote(str(_escape_value(info_entry.default_value)))} \\"
         )
-
-    for index, env in enumerate(docker_envs):
-        suffix = " \\" if index < len(docker_envs) - 1 else ""
-        lines.append(f"  {env}{suffix}")
 
     lines.append("  your-image:latest")
     lines.append("```")
@@ -160,9 +164,40 @@ def write_config_markdown[T](
     output_path.write_text("\n".join(lines), encoding="utf-8")
 
 
-def _encase_str_in_quotes(value: object) -> str:
-    """Creates "value" from value for a str, otherwise return str(value)"""
-    if isinstance(value, str):
-        return f'"{value!s}"'
+def _markdown_table_cell(value: object) -> str:
+    value = _escape_value(value)
+    return (
+        str(value)
+        .replace("&", "&amp;")
+        .replace("<", "&lt;")
+        .replace(">", "&gt;")
+        .replace("|", "&#124;")
+    )
 
-    return f"{value!s}"
+
+def _yaml_comment(input: object) -> str:
+    text = str(input)
+    result = "\n".join(f"# {line}" for line in text.splitlines()) or "#"
+    return result
+
+
+def _yaml_line(key: str, val: object) -> str:
+    dumped = yaml.safe_dump(
+        {key: val},
+        default_flow_style=False,
+        sort_keys=False,
+        allow_unicode=True,
+        line_break="",
+    ).rstrip()
+
+    return dumped
+
+
+def _escape_value(input: object) -> object:
+    if isinstance(input, str):
+        input = input.replace("```", "\\`\\`\\`")
+        input = input.replace("\r\n", "\\r\\n")
+        input = input.replace("\r", "\\r")
+        input = input.replace("\n", "\\n")
+
+    return input

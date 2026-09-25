@@ -3,7 +3,7 @@
 
 # ApPySetty ⚙️
 
-**A simple, type-safe Python library for managing application configuration from environment variables and YAML.**
+**A simple, type-safe Python library for managing application configuration from Environment variables and YAML.**
 
 ApPySetty uses Python dataclasses as the single definition of your application configuration. It can load values from configuration files and environment variables and generate documentation from the same definition.
 
@@ -15,12 +15,12 @@ Install:
 uv add appysetty
 ```
 
-Define your configuration:
+Define your configuration and read from Environment:
 
 ```python
 from dataclasses import dataclass
 
-from appysetty import AppConfigSource, read_configuration
+from appysetty import EnvSource, read_configuration
 
 
 @dataclass
@@ -32,22 +32,11 @@ class Config:
 
 config = read_configuration(
     Config,
-    AppConfigSource.ENV,
+    EnvSource(),
 )
 ```
 
-> [!note]
-> Please note that `.strip()` is applied to all string values which removes leading and trailing whitespaces
-
-Override values with environment variables:
-
-```bash
-export HOST="0.0.0.0"
-export PORT="9000"
-export DEBUG="true"
-```
-
-Or load them from YAML:
+Or load values from YAML:
 
 ```yaml
 host: localhost
@@ -58,11 +47,23 @@ debug: false
 ```python
 config = read_configuration(
     Config,
-    AppConfigSource.YAML,
+    YamlSource(path="yaml_file.yaml"),
 )
 ```
 
-And also document your configuration with an example yaml and a markdown document:
+Or both:
+
+```python
+config = read_configuration(
+    Config,
+    [YamlSource(path="yaml_file.yaml"), EnvSource()],
+)
+```
+
+> [!note]
+> Sources are applied in order. Later sources override values from earlier sources.
+
+And also document your configuration with an example .yaml and a markdown document:
 
 ```python
 write_configuration_documentation(Config, output_dir=Path("./docs"))
@@ -70,39 +71,102 @@ write_configuration_documentation(Config, output_dir=Path("./docs"))
 
 ## Configuration Sources
 
-ApPySetty currently supports:
-
-- `ENV`: environment variables using UPPER_SNAKE_CASE only
-- `YAML`: YAML configuration files
-
-Multiple sources can be combined. Later sources overwrite values from earlier sources:
+ApPySetty uses `AppConfigSource` as the interface to define loaders. These sources are loaded and applied in the order they are provided.
 
 ```python
-config = read_configuration(
-    Config,
-    [
-        AppConfigSource.YAML,
-        AppConfigSource.ENV,
-    ],
+cfg = read_configuration(
+    Config, [YamlSource(...), TomlSource(...), EnvSource(...), DictSource(...)]
 )
 ```
 
-By default, YAML files are searched for in:
+In the example above, YAML values are applied first, then environment variables, and finally dictionary values. Later sources override values from earlier sources.
 
-```text
-config.yaml
-config.yml
-config/config.yaml
-config/config.yml
+The available sources are:
+
+#### `EnvSource()` - Reading from Environment
+
+```python
+cfg = read_configuration(Config, EnvSource(prefix="MY_PREFIX"))
 ```
 
-An explicit YAML path can also be provided.
+For every key within the config, the key is converted to UPPER_SNAKE_CASE, the optional prefix is applied and the resulting key is used to read a value from the environment.
 
-## Usage Details
+> [!note]
+> The prefix itself will not be converted to UPPER_SNAKE_CASE
 
-### Define Config
+#### `DictSource()` - Reading from a Dict
 
-First you need to define a dataclass which contains all the configuration options you want to support.
+```python
+cfg = read_configuration(Config, DictSource(input={"key": "val"}))
+```
+
+Values are read from the provided dictionary using the configuration field names as keys. Unknown dictionary keys are rejected.
+
+#### `YamlSource()` - Reading from a .yaml file
+
+```python
+cfg = read_configuration(Config, YamlSource(path="", required=True))
+```
+
+If path is specified, that file is used. Otherwise, the first existing file from the following list is used:
+
+```text
+config.yml
+config.yaml
+config/config.yml
+config/config.yaml
+```
+
+If required is False, a missing file will simply be ignored. If required is True an AppConfigError is raised. By default required is set to True.
+
+> [!note]
+> Only flat mappings are allowed and the YAML key must match the config key exactly
+
+#### `TomlSource()` - Reading from a .toml file
+
+```python
+cfg = read_configuration(Config, TomlSource(path="", required=True))
+```
+
+If path is specified, that file is used. Otherwise, the first existing file from the following list is used:
+
+```text
+config.toml
+config/config.toml
+```
+
+If required is False, a missing file will simply be ignored. If required is True an AppConfigError is raised. By default required is set to True.
+
+> [!note]
+> Only flat mappings are allowed and the TOML key must match the config key exactly
+
+#### Define your own source
+
+All sources are based on the `AppConfigSource`. To extend the list of sources, you could supply your own implementation:
+
+```python
+@dataclass(frozen=True)
+class MyOwnSource(AppConfigSource):
+    """Example for your source, based on the DictSource"""
+
+    input: dict[str, str]
+
+    def load(self, config_type_hints):
+        values: dict[str, object] = {}
+
+        for name, value in self.input.items():
+            ...
+
+        return values
+```
+
+> [!caution]
+> Using your own source might allow for more types then anticipated by the tool. So be careful.
+
+
+## Define Config
+
+The simplest form of a config class looks like this:
 
 ```python
 @dataclass
@@ -114,7 +178,7 @@ class Config:
 ```
 
 > [!note]
-> As of now, only `str`, `int`, `float` and `bool` are supported. Experience shows that other types are usually better handled on the user side
+> As of now, only `str`, `int`, `float` and `bool` are supported
 
 You can also extend your dataclass with additional information for better documentation and for masking secrets:
 
@@ -130,63 +194,18 @@ class ConfigWithMetadata:
         str,
         AppConfigEntry(description="The database password", is_secret=True),
     ] = "secret"
+
+    debug: bool = False
 ```
 
 Both variants can be mixed. If no description is provided, the name of the field will be the description.
 
-### Read Config
+## Write Documentation
 
-To read the config, use:
+One feature of this tool is automating the documentation items for configuration options:
 
-```python
-cfg = read_configuration(ConfigWithMetadata, AppConfigSource.ENV)
-```
-
-After that `cfg` should have all configurations with auto-complete ready for you.
-
-You can also pass an instance and use multiple sources, where each source will overwrite the previous one:
-
-```python
-cfg = read_configuration(
-    ConfigWithMetadata(), [AppConfigSource.ENV, AppConfigSource.YAML]
-)
-```
-
-The available sources are:
-
-| Key                    | Source      | Description                                                                              |
-| ---------------------- | ----------- | ---------------------------------------------------------------------------------------- |
-| `AppConfigSource.ENV`  | Environment | This will read config from environment, using UPPER_SNAKE_CASE variant of the field name |
-| `AppConfigSource.YAML` | YAML file   | This will read the config from a yaml file, only matching field name exactly             |
-
-#### Options
-
-Options can be used to customize the config:
-
-```python
-cfg = read_configuration(
-    ConfigWithMetadata,
-    [AppConfigSource.ENV, AppConfigSource.YAML],
-    AppConfigOptions(
-        env_prefix="MY_APP_PREFIX",
-        yaml_path="config.dev.yaml",
-        overwrite={"port": "8000"},
-    ),
-)
-```
-
-| Option       | Description                                                                                     |
-| ------------ | ----------------------------------------------------------------------------------------------- |
-| `env_prefix` | A Prefix that will be prepended to all field names using UPPER_SNAKE_CASE to read environment . |
-| `yaml_path`  | Setting a specific yaml file to use. It unset, the tool will look for `(config)/config.y(a)ml`. |
-| `overwrite`  | This accepts a mapping. values set with overwrite will always overwrite anything else           |
-
-### Write Documentation
-
-The second feature of this tool is automated creation of a few documentation items for configuration options:
-
-- `config.example.yaml` containing an example yaml file with default values and descriptive comments (if descriptions were defined)
-- `DefaultConfiguration.md` containing a table of all options with ENV variant, a docker environment block for docker compose and a docker run example command with all -e set.
+- `config.example.yaml` containing an example YAML file with default values and descriptive comments (if descriptions were defined)
+- `DefaultConfiguration.md` containing a table of all options with ENV variant, a docker compose `environment` block for docker compose and a docker run example command with all -e set.
 
 To create the documentation, use:
 
@@ -196,7 +215,7 @@ write_configuration_documentation(
     ConfigWithMetadata, env_prefix="MY_APP_PREFIX", output_dir=Path()
 )
 
-# Only create yaml example
+# Only create YAML example
 write_config_yaml_example(ConfigWithMetadata, output_dir=Path())
 
 # Only create markdown document
@@ -205,6 +224,9 @@ write_config_markdown(ConfigWithMetadata, env_prefix="MY_APP_PREFIX", output_dir
 
 > [!note]
 > `env_prefix` defaults to "" if not set and `output_dir` defaults to `./docs/config` if not set.
+
+> [!caution]
+> Make sure to always match the `env_prefix` to the actual prefix used for the EnvSource if applied
 
 ## Development
 
@@ -235,7 +257,8 @@ uv run python -m examples.write_documentation
 uv run python -m examples.read_documentation
 ```
 
-Ruffing:
+Run Ruff:
+
 ```bash
 uv run ruff check
 uv run ruff format .

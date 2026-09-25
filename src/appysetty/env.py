@@ -1,4 +1,4 @@
-def get_env_name(prefix: str | None, field_name: str) -> str:
+def get_env_name(field_name: str, prefix: str | None) -> str:
     """Returns MY_PREFIX_FIELD_NAME from MY_PREFIX(_) and the fields name"""
     name = field_name.upper()
 
