@@ -47,7 +47,7 @@ def write_config_yaml_example[T](
         default_value = getattr(cfg, field_name)
 
         if entry.is_secret:
-            default_value = f"Masked[len:{len(default_value)}]"
+            default_value = f"Masked[len:{len(str(default_value))}]"
 
         description = entry.description
         if len(description.strip()) == 0:
@@ -87,7 +87,7 @@ def write_config_markdown[T](
 
         default_value = getattr(cfg, field_name)
         if entry.is_secret:
-            default_value = f"Masked[len:{len(default_value)}]"
+            default_value = f"Masked[len:{len(str(default_value))}]"
 
         entries.append(
             MarkdownInfoEntry(

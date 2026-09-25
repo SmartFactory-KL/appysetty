@@ -125,7 +125,7 @@ def visit_config_strings[T](config: Any, visitor: AppConfigVisitor) -> None:
         field_value = str(getattr(config, field_name))
 
         if field_metadata is not None and field_metadata.is_secret:
-            field_value = f"Masked[len:{len(field_value)}]"
+            field_value = f"Masked[len:{len(str(field_value))}]"
 
         if get_origin(field_type) is Annotated:
             field_type = get_args(field_type)[0]
