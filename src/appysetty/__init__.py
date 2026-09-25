@@ -1,4 +1,9 @@
-from appysetty.model import AppConfigEntry, AppConfigSource
+from appysetty.model import (
+    AppConfigEntry,
+    AppConfigError,
+    AppConfigSource,
+    AppConfigWarning,
+)
 from appysetty.read import read_configuration
 from appysetty.source import DictSource, EnvSource, TomlSource, YamlSource
 from appysetty.write import (
@@ -9,7 +14,9 @@ from appysetty.write import (
 
 __all__ = [
     "AppConfigEntry",
+    "AppConfigError",
     "AppConfigSource",
+    "AppConfigWarning",
     "DictSource",
     "EnvSource",
     "TomlSource",
