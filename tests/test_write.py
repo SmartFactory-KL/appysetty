@@ -18,7 +18,6 @@ class Config:
     password: Annotated[str, AppConfigEntry(is_secret=True)] = "MyPassword"
 
 
-
 def test_write_config_yaml_example(tmp_path: Path):
     write_config_yaml_example(Config(), output_dir=tmp_path)
 
@@ -28,7 +27,7 @@ def test_write_config_yaml_example(tmp_path: Path):
     assert "# Type: int" in output
     assert "# Type: bool" in output
 
-    assert 'host: localhost' in output
+    assert "host: localhost" in output
     assert "port: 8080" in output
     assert "enabled: true" in output
 
@@ -40,7 +39,7 @@ def test_write_config_yaml_example_accepts_config_type(tmp_path: Path):
 
     output = (tmp_path / "config.example.yaml").read_text()
 
-    assert 'host: localhost' in output
+    assert "host: localhost" in output
     assert "port: 8080" in output
     assert "enabled: true" in output
 
