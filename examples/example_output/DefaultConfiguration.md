@@ -31,11 +31,11 @@ Example `docker run` command using the default values:
 
 ```bash
 docker run \
--e EXAMPLE_APP_HOST='localhost\nbadboy' \
--e EXAMPLE_APP_PORT=8080 \
--e EXAMPLE_APP_DEBUG=False \
--e EXAMPLE_APP_TIMEOUT=5.0 \
--e EXAMPLE_APP_WORKERS=4 \
--e EXAMPLE_APP_API_KEY='Masked[len:8]' \
+  -e EXAMPLE_APP_HOST='localhost\nbadboy' \
+  -e EXAMPLE_APP_PORT=8080 \
+  -e EXAMPLE_APP_DEBUG=False \
+  -e EXAMPLE_APP_TIMEOUT=5.0 \
+  -e EXAMPLE_APP_WORKERS=4 \
+  -e EXAMPLE_APP_API_KEY='Masked[len:8]' \
   your-image:latest
 ```
