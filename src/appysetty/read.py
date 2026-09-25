@@ -28,7 +28,7 @@ def read_configuration[T](
 
     Args:
         sources: list of sources to read
-        trim_strings: If set to True, all string values will apply .strip(), removing whitespaces at start and end
+        trim_strings: If set to True, all string config values will apply .strip(), removing whitespaces at start and end
 
     Returns:
         The resulting application configuration
