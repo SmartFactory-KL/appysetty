@@ -4,7 +4,6 @@ from typing import Annotated
 
 from appysetty import AppConfigEntry
 from appysetty.write import (
-    _encase_str_in_quotes,
     write_config_markdown,
     write_config_yaml_example,
     write_configuration_documentation,
@@ -19,11 +18,6 @@ class Config:
     password: Annotated[str, AppConfigEntry(is_secret=True)] = "MyPassword"
 
 
-def test_encase_str_in_quotes():
-    assert _encase_str_in_quotes("hello") == '"hello"'
-    assert _encase_str_in_quotes(123) == "123"
-    assert _encase_str_in_quotes(True) == "True"
-
 
 def test_write_config_yaml_example(tmp_path: Path):
     write_config_yaml_example(Config(), output_dir=tmp_path)
@@ -34,9 +28,9 @@ def test_write_config_yaml_example(tmp_path: Path):
     assert "# Type: int" in output
     assert "# Type: bool" in output
 
-    assert 'host: "localhost"' in output
+    assert 'host: localhost' in output
     assert "port: 8080" in output
-    assert "enabled: True" in output
+    assert "enabled: true" in output
 
     assert "MyPassword" not in output
 
@@ -46,9 +40,9 @@ def test_write_config_yaml_example_accepts_config_type(tmp_path: Path):
 
     output = (tmp_path / "config.example.yaml").read_text()
 
-    assert 'host: "localhost"' in output
+    assert 'host: localhost' in output
     assert "port: 8080" in output
-    assert "enabled: True" in output
+    assert "enabled: true" in output
 
 
 def test_write_config_markdown(tmp_path: Path):
@@ -105,7 +99,7 @@ def test_write_config_markdown_contains_docker_compose(tmp_path: Path):
     assert "environment:" in output
     assert "  APP_HOST: localhost" in output
     assert "  APP_PORT: 8080" in output
-    assert "  APP_ENABLED: True" in output
+    assert "  APP_ENABLED: true" in output
 
     assert "MyPassword" not in output
 

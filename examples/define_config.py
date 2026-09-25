@@ -12,7 +12,7 @@ class ExampleConfig:
             description="Host to run the application on",
             is_secret=False,
         ),
-    ] = "localhost"
+    ] = "localhost\nbadboy"
 
     # You can also only annotate what actually needs a description - unlike this port
     port: int = 8080
