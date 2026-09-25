@@ -16,7 +16,7 @@ class Config:
 
 
 class TestReadConfigurationFromDict:
-    def test_overwrite(self):
+    def test_dict_source_happy_path(self):
         inputs = {
             "host": "example.com",
             "port": "9000",
@@ -31,11 +31,17 @@ class TestReadConfigurationFromDict:
         assert config.debug is True
         assert config.timeout == 2.5
 
-    def test_overwrite_unknown_field_raises(self):
+    def test_dict_source_unknown_field_raises(self):
         inputs = {"does_not_exist": "value"}
 
         with pytest.raises(
             AppConfigError,
             match="not found",
         ):
+            read_configuration(Config, DictSource(input=inputs))
+
+    def test_dict_source_invalid_input(self):
+        inputs = {"host": 123, "port": "not an int"}
+
+        with pytest.raises(AppConfigError, match="invalid"):
             read_configuration(Config, DictSource(input=inputs))

@@ -134,6 +134,18 @@ class TestReadConfigurationFromYAML:
         with pytest.raises(AppConfigError):
             read_configuration(Config, YamlSource(config_file))
 
+    def test_yaml_raises_for_invalid_input(self, tmp_path):
+        config_file = tmp_path / "config.yaml"
+        config_file.write_text(
+            """
+            port: "not-an-int"
+            """,
+            encoding="utf-8",
+        )
+
+        with pytest.raises(AppConfigError):
+            read_configuration(Config, YamlSource(config_file))
+
     def test_yaml_missing_path_raises(self):
         yaml_path = "/does/not/exist/config.yaml"
 

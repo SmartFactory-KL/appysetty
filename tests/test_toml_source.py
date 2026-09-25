@@ -123,6 +123,21 @@ class TestReadConfigurationFromTOML:
                 TomlSource(toml_path, required=True),
             )
 
+    def test_toml_invalid_input_raises(self, tmp_path):
+        config_file = tmp_path / "config.toml"
+        config_file.write_text(
+            """
+            port = "not-an-int"
+            """,
+            encoding="utf-8",
+        )
+
+        with pytest.raises(AppConfigError, match="invalid"):
+            read_configuration(
+                Config,
+                TomlSource(config_file, required=True),
+            )
+
     def test_toml_invalid_syntax_raises(self, tmp_path):
         config_file = tmp_path / "config.toml"
         config_file.write_text(
